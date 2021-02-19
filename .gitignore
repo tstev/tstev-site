@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+
+.DS_Store
+Thumbs.db
+
+# Netlify builds site so these can be ignored
+/public/
+/resources/
