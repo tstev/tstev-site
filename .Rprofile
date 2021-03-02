@@ -7,19 +7,24 @@ if (file.exists("~/.Rprofile")) {
   base::sys.source("~/.Rprofile", envir = environment())
 }
 
-# Now set options to customize the behavior of blogdown for this project. Below
+# Now set options to customize the behaviour of blogdown for this project. Below
 # are a few sample options; for more options, see
 # https://bookdown.org/yihui/blogdown/global-options.html
 options(
-  # to automatically serve the site on RStudio startup, set this option to TRUE
+  # Post settings
+  blogdown.author = "Tomas Stevens",
+  blogdown.ext = ".Rmd",
+  blogdown.yaml.empty = TRUE,
+  blogdown.subdir = "post",
+  blogdown.title_case = TRUE,
+  # Fix hugo version
+  blogdown.hugo.version = "0.81.0",
+  # Page bundles (hugo functionality)
+  # Source: https://alison.rbind.io/post/2019-02-21-hugo-page-bundles/
+  blogdown.new_bundle = TRUE,
+  blogdown.knit.on_save = FALSE,
+  blogdown.method = "html",
   blogdown.serve_site.startup = FALSE,
-  # to disable knitting Rmd files on save, set this option to FALSE
-  blogdown.knit.on_save = TRUE,
-  # build .Rmd to .html (via Pandoc); to build to Markdown, set this option to 'markdown'
-  blogdown.method = "html"
+  # Use md5sum to rebuild (see ?blogdown::build_site)
+  blogdown.files_filter = blogdown::filter_md5sum
 )
-
-# Post setting
-options(blogdown.author = "Tomas Stevens", blogdown.ext = ".Rmd")
-# fix Hugo version
-options(blogdown.hugo.version = "0.81.0")
