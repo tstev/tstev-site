@@ -10,9 +10,9 @@ active: true
 headless: true
 
 # Order that this section appears on the page.
-weight: 15
+weight: 20
 
-title: Hugo Academic Theme Demo
+title: Posts
 subtitle:
 
 design:
@@ -25,5 +25,5 @@ design:
     image_size: cover
     text_color_light: true
   spacing:
-    padding: ["20px", "0", "20px", "0"]
+    padding: ["20px", "0", "15px", "0"]
 ---
