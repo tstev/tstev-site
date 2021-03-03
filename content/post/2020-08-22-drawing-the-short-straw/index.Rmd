@@ -1,0 +1,214 @@
+---
+title: Drawing the Short Straw
+author: Tomas Stevens
+date: '2020-08-22'
+slug: drawing-the-short-straw
+categories: ["R"]
+tags: ["simulation", "probability"]
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2020-08-22T15:30:22+02:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+Recently I started watching the Brazilian Netflix show [3%](https://www.imdb.com/title/tt4922804/). I have always been a sucker for post-apocalyptic settings. Anyway, before you read on let me warn for a possible spoilers :rotating_light:.
+
+The premise of the show is that there is an island that is inhabited by technologically advanced people. It is reserved for the elite chosen few from the inland. The inland contains 97% of the population and the island the remaining 3%. Every year when inlanders turn 20 they partake in the Process. They must pass certain tests designed to reveal their merit. 
+
+As we follow a certain group of individuals during Process #104 there is one test where 7 candidates are locked up in a room with a bag that contains 6 coins. They were told only 6 people in possession of a coin may pass. They had to decide how to eliminate 1 candidate within 15 minutes. 
+
+After some arguing and quarreling they settled for a system where one-by-one they would draw a piece of a torn up scarf. The person with the shortest piece would be not get a coin. They argued it was the most fair.
+
+While watching this I wondered if this was indeed the fairest way. Did everyone indeed have the same chance? Is it the same as giving everyone a piece randomly and only revealing the outcome at the end? Would be smarter to go first or last?
+
+At first instinct I thought 7 pieces, everyone has a $\frac{1}{7} \approx 14.3\%$ chance to draw the shortest piece. However, they went one-by-one immediately revealing the outcome before the next draws given the previous person did not draw the shortest. So then I thought the person who goes first has a $\frac{1}{7}$ chance, the second person $\frac{1}{7 -1} = \frac{1}{6} \approx 16.7\%$, the third $20\%$ and so on. Each time more likely to be eliminated given that the previous wasn't.
+
+A quick Google search on `"drawing shortest straw math"` made [quick work](https://www.askamathematician.com/2014/11/q-when-drawing-straws-is-it-better-to-be-first-or-last/) of [my amateur maths](https://math.stackexchange.com/a/1475675) thinking. I still thought it would be fun to simulate it in R :smile:.
+
+## Setting the scene
+
+In order to simulate this I will be very verbose for illustrative purposes and to show my thinking along the way. It will be anything but efficient :grimacing:. 
+
+First I need a function which randomly creates $N-1$ long pieces of a scarf and $1$ short piece where $N$ is the number of players. This will be input for the function. From now on I will simulate a game with 10 people to make the probabilities a bit nicer and easier to calculate with in our heads.
+
+```{r echo=TRUE}
+generate_torn_scarf <- function(n) {
+  # Create N - 1 long pieces and 1 short piece
+  options <- c("Long", "Short")[c(rep(1L, n - 1L), 2L)]
+  
+  # Randomize order of pieces
+  scarf <- sample(options, size = n)
+  
+  return(scarf)
+}
+
+# Set the scene
+n_players <- 10L
+
+# Test functions works
+set.seed(42L)
+generate_torn_scarf(n_players)
+```
+
+This seems to work and will be useful in running the simulation multiple times without having to repeat the code. I can just call the function to generate a new torn up scarf where the players will chose from. Let's test it once to see how it works.
+
+```{r echo=TRUE}
+# Helper function to check if a player is eliminated
+is_eliminated <- function(draw) draw == "Short"
+
+# Tear up scarf
+scarf <- generate_torn_scarf(n_players)
+
+# First person draws a piece of the torn scarf
+piece <- sample.int(length(scarf), size = 1L)
+
+# Remove piece from the set
+scarf <- scarf[-piece]
+
+if (is_eliminated(scarf[piece])) {
+  cat("You are eliminated!")
+} else {
+  cat("You are safe! Next to draw please...")
+}
+```
+
+I will not keep drawing until someone is eliminated by hand. Instead I will use the above logic in a `while` loop which then stop once a player has been eliminated.
+
+```{r echo=TRUE}
+# Reset game and use loop
+set.seed(42L)
+scarf <- generate_torn_scarf(n_players)
+
+# Start drawing one-by-one
+player <- 0
+while(player < n_players) {
+  # Next player to draw
+  player <- player + 1
+  
+  # Randomly draw a piece
+  piece <- sample.int(length(scarf), size = 1L)
+  draw <- scarf[piece]
+
+  # Remove piece from set
+  scarf <- scarf[-piece]
+  
+  # Print gameplay
+  if (is_eliminated(draw)) {
+    cat(paste0("Player #", player, " draws '", draw, "' = Eliminated!\n"))
+    break
+  } else {
+    cat(paste0("Player #", player, " draws '", draw, "' = Safe! Next...\n"))
+  }
+  cat("Piece remaining = [", paste0(scarf, collapse = ", "), "]\n")
+}
+
+```
+
+This logic can be embedded in a function called `play_round`. The function accepts as an argument the number of people that are playing. It uses the functions I created earlier to generate a torn scarf and then one-by-one let players draw a piece returning the player that has been eliminated.
+
+```{r echo=TRUE}
+# Function to play a round till a player is eliminated
+play_round <- function(n_players) {
+  # Tear up a scarf
+  scarf <- generate_torn_scarf(n = n_players)
+  
+  # Keep drawing a piece until a player is eliminated
+  player <- 0L
+  while(player < n_players) {
+    # Next person to draw
+    player <- player + 1L
+    
+    # Draw a piece
+    piece <- sample.int(length(scarf), size = 1L)
+    
+    # Check if player is eliminated
+    if (is_eliminated(scarf[piece])) break
+    
+    # Remove piece
+    scarf <- scarf[-piece]
+  }
+
+  # Return the eliminated player
+  return(player)
+}
+
+# Test it works
+set.seed(42L)
+play_round(10)
+```
+
+Player number 7 has been eliminated. Now lets play 10,000 games to see if indeed each player gets eliminated an equal number of times.
+
+```{r echo=TRUE}
+# Simulate multiple trials
+set.seed(42L)
+eliminated <- replicate(10000L, play_round(10))
+
+table(eliminated)
+```
+
+Being more of a visual person I plotted the number of times out of 10,000 that each player got eliminated. If the theory holds and my code works we can expect this to be 1,000 times for each player ($\frac{1}{10} \times 10000 = 1000$).
+
+```{r first-sim, echo=FALSE, fig.align='center', fig.ext='png', fig.show='hold', fig.retina=2}
+# Draw chances
+par(bg = "transparent")
+hist(
+  eliminated,
+  breaks = seq(0.5, 10.5, by = 1),
+  xlim = c(0.5, 10.5),
+  main = NULL,
+  xlab = "Person",
+  ylab = "Number of times eliminated",
+  col = "lightblue", 
+  freq = TRUE
+)
+```
+
+Seems like the theory holds up and the code works. No clear difference in the probability between players. It looks quite uniform. The number of trials can be reduced or increased easily. I would expect if it were to be run a million times the figure would become even flatter.
+
+Here I provide an alternative way of running the simulation for 10,000 games. Instead of looping through the pieces we can also assume that the order of pieces is also the order in which the players draw the pieces. Essentially that would be similar to dealing out all the pieces and revealing the outcome.
+
+```{r echo=TRUE}
+# Reset
+set.seed(42L)
+eliminated <- integer(0L)
+max_trials <- 10000L
+trail <- 0L
+while(trail < max_trials){
+  trail <- trail + 1L
+  scarf <- generate_torn_scarf(n_players)
+  draws <- sample.int(10, replace = FALSE)
+  eliminated <- c(eliminated, which(scarf[draws] == "Short"))
+}
+
+table(eliminated)
+```
+
+```{r second-sim, echo=FALSE, fig.align='center', fig.ext='png', fig.show='hold', fig.retina=2}
+par(bg = "transparent")
+
+# Draw chances
+hist(
+  eliminated,
+  breaks = seq(0.5, 10.5, by = 1),
+  xlim = c(0.5, 10.5),
+  main = NULL,
+  xlab = "Person",
+  ylab = "Number of times eliminated",
+  col = "lightblue", freq = TRUE
+)
+```
+
+Results are very similar to the previous method. The code and theory still holds up. This is by no means a more efficient way per se because we are growing the vector `eliminated` in a loop. This is not recommended if speed is essential. In that case exploiting vectorization or compiled Fortran/C++ code would be better.
+
+## Conclusion
+
+Being able to reuse the functions it becomes very easy to play around with the different parameters and easily run the simulations. That is how I try to program in general - put repeated steps/code in functions. It makes it all very modular and flexible. Next fun step would be to try and benchmark it against other implementations and see what is most efficient way. I have had to do this for production code where I spent a lot of time trying different things and in the process I learned a lot about R, programming and problem solving.
+
+As for the simulation my initial inclination and maths sucked but this was a fun exercise for me. A refresher in some probability and simple R simulations. Hopefully this will the first post among more :nerd_face:.
