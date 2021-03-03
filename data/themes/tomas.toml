@@ -1,0 +1,20 @@
+# Theme metadata
+name = "tomas"
+
+# Is theme light or dark?
+light = true
+
+# Primary
+primary = "#660099" # links and linkable icons
+
+# Menu
+menu_primary = "#660099" # backgroud of menu
+menu_text = "#FFFFFF"    # text of menu
+menu_text_active = "#33004d" # text when hovering/active
+menu_title = "#FFFFFF"  # main title color
+
+
+# Backgrounds
+background = "#FFFFFF"
+home_section_odd = "#FFFFFF"
+home_section_even = "#FFFFFF"
