@@ -12,7 +12,7 @@ headless: true
 # Order that this section appears on the page.
 weight: 20
 
-title: Posts
+title: Recent Posts
 subtitle:
 
 design:
@@ -24,6 +24,7 @@ design:
     image_position: center
     image_size: cover
     text_color_light: true
-  spacing:
-    padding: ["20px", "0", "15px", "0"]
+  spacing: # [top, left, bottom, right]
+    padding: ["20px", "0", "20px", "0"]
+             
 ---
