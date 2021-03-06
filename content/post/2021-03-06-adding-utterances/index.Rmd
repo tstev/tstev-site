@@ -1,0 +1,68 @@
+---
+title: Utterances and Blogdown
+author: Tomas Stevens
+date: '2021-03-06'
+slug: adding-utterances
+categories: []
+tags: ["R", "blogdown"]
+subtitle: 'Making posts commentable using utteranc.es'
+summary: ''
+authors: []
+lastmod: '2021-03-06T10:31:54+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+While browsing the many sites I used as references to help get my website up and running with \`blogdown\`, I saw the cool Github-like comments section at the bottom of the posts. I was envious as it looked really cool! Disqus always put me off a bit so I figured I would just not have a comments section. Not that I expect much traffic. In any case, I added it to my to-do list for the site. Today, I tackle it 😎.
+
+# Installation
+
+The installation turned out to be quite easy. I followed [Maëlle's](https://masalmon.eu/2019/10/02/disqus/) great post to get me started. She uses a different theme but due to tips in her comment section I managed to apply it to the [Wowchemy/Academic](https://academic-demo.netlify.app/ "Demo site for the Academic theme from Wowchemy") theme this site uses. I took a slightly different route though, more on that later. It boiled down to these steps;
+
+1.  Install the [utterances app](https://github.com/apps/utterances "Install the utterance.es app") to your repo. I chose to just install it on my site repo only. I missed this step initially while testing the result locally and therefore put it on top.
+
+2.  Create a label for comments as the utteranc.es bot is not able to do that itself. Emojis in labels possible 😄!
+
+3.  Fill in the utteranc.es [configuration](https://utteranc.es/#configuration) page and copy the script snippet at the end.
+
+4.  This is the part where I chose a different route. I copied the code from step 3 into `layouts/partials/comments/utterances.html` . ⚠️ [Not](https://bookdown.org/yihui/blogdown/custom-layouts.html "Don't edit files in the underlying themes folder. See Pottery barn rule.") in the underlying `themes/` folder but in the root directory of my website. So create folders as necessary.
+
+5.  Changed the comments provider in the `params.yaml` [^1] to `provider: 'utterances'` .
+
+6.  Tested locally using `blogdown::serve_site()` and left a test comment.
+
+7.  🥳
+
+[^1]: Found in `config/_default/params.yaml` . Note that I used `blogdown::new_site()` to install the theme and it converted the `.toml` to `.yaml` .
+
+## Step 4 - Why? {#step-4---why}
+
+The comments mentioned placing a `comments.html` containing the configuration from step 3 in the `layouts/partials/` directory in the root directory of your site. I noticed while exploring the theme folder that there was a subdirectory called `comments/` which contained two `.html` files namely, `commento.html` and `disqus.html` . I recognized those from editing my `config.yaml` during initial setup of the site. The `comments.html` file contained the following code:
+
+``` {.go}
+{{ $provider := trim (site.Params.comments.provider | lower) " " }}
+
+{{ if $provider }}
+  {{ $provider_tpl := printf "partials/comments/%s.html" $provider }}
+  
+  ...
+  
+  {{ if $commentable_page }}
+  <section id="comments">
+    {{ partial $provider_tpl . }}
+  </section>
+  {{ end }}
+{{ end }}
+```
+
+So it seems that the template for the different comment providers is collected from the subdirectory. So I wondered if it would work to create a new provider by adding `utterances.html` to the subdirectory. :rotating_light: Spoiler it did 🥳!
+
+I preferred this method as I found it a bit more elegant, by using functionality provided to me by the theme's [author](https://github.com/gcushen "Thanks for the awesome theme!"). This also allows me to easily disable it by setting `provider: ''` in my `config.yaml` . For example, if it needs to be temporarily disabled, for whatever reason, or if I want to test a different provider in the future. Of course deleting \`comments.html\` is real easy. Many ways lead to Rome.
+
+# Conclusion
+
+Thanks to many to helpful comments in Maëlle's blog I was able to add comments to my website with utteranc.es. I also learned a bit about how the theme I use and Hugo work. I am happy with the result.
