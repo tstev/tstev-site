@@ -68,6 +68,7 @@ highlight_languages:
   - YAML
   - bash
   - awk
+  - go
 math: true
 diagram: false
 privacy_pack: false
@@ -103,7 +104,7 @@ avatar:
   shape: circle
 publications:
   date_format: January 2006
-  citation_style: mls
+  citation_style: mla
 projects:
   post_view: 2
   publication_view: 2
@@ -112,13 +113,13 @@ breadcrumb:
   page_types:
     book: true
 comments:
-  provider: ''
+  provider: 'utterances'
   commentable:
     post: true
-    book: true
-    project: true
+    book: false
+    project: false
     publication: true
-    event: true
+    event: false
   disqus:
     shortname: ''
     show_count: true

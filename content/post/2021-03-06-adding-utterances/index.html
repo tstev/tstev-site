@@ -1,0 +1,65 @@
+---
+title: Utterances and Blogdown
+author: Tomas Stevens
+date: '2021-03-06'
+slug: adding-utterances
+categories: []
+tags: ["R", "blogdown"]
+subtitle: 'Making posts commentable using utteranc.es'
+summary: ''
+authors: []
+lastmod: '2021-03-06T10:31:54+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>While browsing the many sites I used as references to help get my website up and running with `blogdown`, I saw the cool Github-like comments section at the bottom of the posts. I was envious as it looked really cool! Disqus always put me off a bit so I figured I would just not have a comments section. Not that I expect much traffic. In any case, I added it to my to-do list for the site. Today, I tackle it 😎.</p>
+<div id="installation" class="section level1">
+<h1>Installation</h1>
+<p>The installation turned out to be quite easy. I followed <a href="https://masalmon.eu/2019/10/02/disqus/">Maëlle’s</a> great post to get me started. She uses a different theme but due to tips in her comment section I managed to apply it to the <a href="https://academic-demo.netlify.app/" title="Demo site for the Academic theme from Wowchemy">Wowchemy/Academic</a> theme this site uses. I took a slightly different route though, more on that later. It boiled down to these steps;</p>
+<ol style="list-style-type: decimal">
+<li><p>Install the <a href="https://github.com/apps/utterances" title="Install the utterance.es app">utterances app</a> to your repo. I chose to just install it on my site repo only. I missed this step initially while testing the result locally and therefore put it on top.</p></li>
+<li><p>Create a label for comments as the utteranc.es bot is not able to do that itself. Emojis in labels possible 😄!</p></li>
+<li><p>Fill in the utteranc.es <a href="https://utteranc.es/#configuration">configuration</a> page and copy the script snippet at the end.</p></li>
+<li><p>This is the part where I chose a different route. I copied the code from step 3 into <code>layouts/partials/comments/utterances.html</code> . ⚠️ <a href="https://bookdown.org/yihui/blogdown/custom-layouts.html" title="Don&#39;t edit files in the underlying themes folder. See Pottery barn rule.">Not</a> in the underlying <code>themes/</code> folder but in the root directory of my website. So create folders as necessary.</p></li>
+<li><p>Changed the comments provider in the <code>params.yaml</code> <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> to <code>provider: 'utterances'</code> .</p></li>
+<li><p>Tested locally using <code>blogdown::serve_site()</code> and left a test comment.</p></li>
+<li><p>🥳</p></li>
+</ol>
+<div id="step-4---why" class="section level2">
+<h2>Step 4 - Why?</h2>
+<p>The comments mentioned placing a <code>comments.html</code> containing the configuration from step 3 in the <code>layouts/partials/</code> directory in the root directory of your site. I noticed while exploring the theme folder that there was a subdirectory called <code>comments/</code> which contained two <code>.html</code> files namely, <code>commento.html</code> and <code>disqus.html</code> . I recognized those from editing my <code>config.yaml</code> during initial setup of the site. The <code>comments.html</code> file contained the following code:</p>
+<pre class="go"><code>{{ $provider := trim (site.Params.comments.provider | lower) &quot; &quot; }}
+
+{{ if $provider }}
+  {{ $provider_tpl := printf &quot;partials/comments/%s.html&quot; $provider }}
+  
+  ...
+  
+  {{ if $commentable_page }}
+  &lt;section id=&quot;comments&quot;&gt;
+    {{ partial $provider_tpl . }}
+  &lt;/section&gt;
+  {{ end }}
+{{ end }}</code></pre>
+<p>So it seems that the template for the different comment providers is collected from the subdirectory. So I wondered if it would work to create a new provider by adding <code>utterances.html</code> to the subdirectory. :rotating_light: Spoiler it did 🥳!</p>
+<p>I preferred this method as I found it a bit more elegant, by using functionality provided to me by the theme’s <a href="https://github.com/gcushen" title="Thanks for the awesome theme!">author</a>. This also allows me to easily disable it by setting <code>provider: ''</code> in my <code>config.yaml</code> . For example, if it needs to be temporarily disabled, for whatever reason, or if I want to test a different provider in the future. Of course deleting `comments.html` is real easy. Many ways lead to Rome.</p>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>Thanks to many to helpful comments in Maëlle’s blog I was able to add comments to my website with utteranc.es. I also learned a bit about how the theme I use and Hugo work. I am happy with the result.</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Found in <code>config/_default/params.yaml</code> . Note that I used <code>blogdown::new_site()</code> to install the theme and it converted the <code>.toml</code> to <code>.yaml</code> .<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
